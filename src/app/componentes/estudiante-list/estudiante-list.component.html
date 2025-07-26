@@ -1,0 +1,95 @@
+<mat-card class="container">
+  <div class="titulo">Lista de Estudiantes</div>
+
+  <table mat-table [dataSource]="estudiantes" class="full-width-table" matSort>
+
+    <!-- Nombre -->
+    <ng-container matColumnDef="nombre">
+      <th mat-header-cell *matHeaderCellDef> Estudiante </th>
+      <td mat-cell *matCellDef="let est"> {{ est.estudiante }} </td>
+    </ng-container>
+
+    <!-- Código -->
+    <ng-container matColumnDef="codigo">
+      <th mat-header-cell *matHeaderCellDef> Código </th>
+      <td mat-cell *matCellDef="let est"> {{ est.codigo }} </td>
+    </ng-container>
+
+    <!-- Programa -->
+    <ng-container matColumnDef="programa">
+      <th mat-header-cell *matHeaderCellDef> Programa </th>
+      <td mat-cell *matCellDef="let est"> {{ est.programaTecnico }} </td>
+    </ng-container>
+
+    <!-- Concepto -->
+    <ng-container matColumnDef="concepto">
+      <th mat-header-cell *matHeaderCellDef> Concepto </th>
+      <td mat-cell *matCellDef="let est"> {{ est.conceptoFacturacion }} </td>
+    </ng-container>
+
+    <!-- Fecha de Liquidación -->
+    <ng-container matColumnDef="fechaLiquidacion">
+      <th mat-header-cell *matHeaderCellDef> Fecha de Liquidación </th>
+      <td mat-cell *matCellDef="let est"> {{ est.fechaLiquidacion }} </td>
+    </ng-container>
+
+    <!-- Estado -->
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef> Estado </th>
+      <td mat-cell *matCellDef="let est"> {{ est.estadoLiquidacion }} </td>
+    </ng-container>
+
+    <!-- Acción -->
+    <ng-container matColumnDef="accion">
+      <th mat-header-cell *matHeaderCellDef> Acción </th>
+      <td mat-cell *matCellDef="let est">
+        <ng-container [ngSwitch]="est.conceptoFacturacion">
+
+          <!-- CONSTANCIA DE ESTUDIO -->
+          <button mat-icon-button
+                  *ngSwitchCase="'CONSTANCIA DE ESTUDIO'"
+                  matTooltip="Generar constancia de estudio"
+                  (click)="accionEstudiante(est)">
+            <mat-icon class="icon-blue">assignment</mat-icon>
+          </button>
+
+          <!-- CERTIFICADO DE NOTA -->
+          <button mat-icon-button
+                  *ngSwitchCase="'CERTIFICADO DE NOTA'"
+                  matTooltip="Generar certificado de notas"
+                  (click)="accionEstudiante(est)">
+            <mat-icon class="icon-green">school</mat-icon>
+          </button>
+
+          <!-- CERTIFICADO BUENA CONDUCTA -->
+          <button mat-icon-button
+                  *ngSwitchCase="'CERTIFICADO BUENA CONDUCTA'"
+                  matTooltip="Generar certificado de buena conducta"
+                  (click)="accionEstudiante(est)">
+            <mat-icon class="icon-orange">verified</mat-icon>
+          </button>
+
+          <!-- Otro caso -->
+          <button mat-icon-button
+                  *ngSwitchDefault
+                  matTooltip="Acción no definida">
+            <mat-icon>help_outline</mat-icon>
+          </button>
+
+        </ng-container>
+      </td>
+    </ng-container>
+
+    <!-- Encabezados y filas -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <!-- Paginador -->
+  <mat-paginator
+    [length]="totalItems"
+    [pageSize]="elementosPorPagina"
+    [pageSizeOptions]="[5, 10, 25]"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+</mat-card>

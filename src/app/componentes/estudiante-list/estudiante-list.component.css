@@ -1,0 +1,115 @@
+/* Fondo general */
+body {
+  background-color: #f0f2f5;
+}
+
+/* Contenedor */
+.container {
+  margin: 40px auto;
+  max-width: 96%;
+  padding: 10px;
+}
+
+/* Título */
+.titulo {
+  text-align: center;
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #0d47a1;
+}
+
+/* Card con borde y sombra */
+mat-card {
+  background-color: #ffffff;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #dfe3e8;
+}
+
+/* Tabla */
+.full-width-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Encabezado */
+mat-header-row {
+  background-color: #1976d2;
+  color: #fff;
+  font-weight: bold;
+}
+
+mat-header-cell {
+  padding: 14px;
+  font-size: 15px;
+  border-right: 1px solid #cfd8dc;
+}
+
+/* Celdas */
+mat-cell {
+  padding: 12px;
+  font-size: 14px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Zebra striping */
+mat-row:nth-child(even) mat-cell {
+  background-color: #f1f8ff;
+}
+
+/* Hover en filas */
+mat-row:hover mat-cell {
+  background-color: #e3f2fd !important;
+  transition: background-color 0.3s ease;
+}
+
+/* Íconos con fondo circular centrado */
+.zoom-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  font-size: 20px;
+}
+
+.zoom-icon:hover {
+  transform: scale(1.3);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Colores personalizados para íconos */
+.icon-blue {
+  color: #1976d2;
+}
+
+.icon-green {
+  color: #388e3c;
+}
+
+.icon-orange {
+  color: #f57c00;
+}
+
+/* Centrar contenido de la última columna (Acción) */
+mat-cell:last-child,
+mat-header-cell:last-child {
+  text-align: center;
+}
+
+/* Estilo del paginador */
+mat-paginator {
+  background-color: #e3f2fd;
+  border-top: 1px solid #90caf9;
+  border-radius: 0 0 16px 16px;
+  padding: 12px;
+  margin-top: 20px;
+}
