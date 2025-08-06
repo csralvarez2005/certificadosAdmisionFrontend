@@ -27,10 +27,18 @@
       <td mat-cell *matCellDef="let est"> {{ est.conceptoFacturacion }} </td>
     </ng-container>
 
+    <!-- Referencia -->
+    <ng-container matColumnDef="referencia">
+      <th mat-header-cell *matHeaderCellDef> Referencia </th>
+      <td mat-cell *matCellDef="let est"> {{ est.referencia }} </td>
+    </ng-container>
+
     <!-- Fecha de Liquidación -->
     <ng-container matColumnDef="fechaLiquidacion">
       <th mat-header-cell *matHeaderCellDef> Fecha de Liquidación </th>
-      <td mat-cell *matCellDef="let est"> {{ est.fechaLiquidacion }} </td>
+      <td mat-cell *matCellDef="let est">
+        {{ isValidDate(est.fechaLiquidacion) ? (est.fechaLiquidacion | date:'dd/MM/yyyy') : '-' }}
+      </td>
     </ng-container>
 
     <!-- Estado -->
@@ -44,38 +52,20 @@
       <th mat-header-cell *matHeaderCellDef> Acción </th>
       <td mat-cell *matCellDef="let est">
         <ng-container [ngSwitch]="est.conceptoFacturacion">
+          <!-- Constancia de Estudio -->
+          <app-constancia-estudio
+            *ngSwitchCase="'CONSTANCIA DE ESTUDIO'"
+            [estudiante]="est">
+          </app-constancia-estudio>
 
-          <!-- CONSTANCIA DE ESTUDIO -->
-          <button mat-icon-button
-                  *ngSwitchCase="'CONSTANCIA DE ESTUDIO'"
-                  matTooltip="Generar constancia de estudio"
-                  (click)="accionEstudiante(est)">
-            <mat-icon class="icon-blue">assignment</mat-icon>
-          </button>
-
-          <!-- CERTIFICADO DE NOTA -->
-          <button mat-icon-button
-                  *ngSwitchCase="'CERTIFICADO DE NOTA'"
-                  matTooltip="Generar certificado de notas"
-                  (click)="accionEstudiante(est)">
-            <mat-icon class="icon-green">school</mat-icon>
-          </button>
-
-          <!-- CERTIFICADO BUENA CONDUCTA -->
-          <button mat-icon-button
-                  *ngSwitchCase="'CERTIFICADO BUENA CONDUCTA'"
-                  matTooltip="Generar certificado de buena conducta"
-                  (click)="accionEstudiante(est)">
-            <mat-icon class="icon-orange">verified</mat-icon>
-          </button>
+          <!-- Certificado de Notas -->
+          <app-certificado-notas
+            *ngSwitchCase="'CERTIFICADO DE NOTA'"
+            [estudiante]="est">
+          </app-certificado-notas>
 
           <!-- Otro caso -->
-          <button mat-icon-button
-                  *ngSwitchDefault
-                  matTooltip="Acción no definida">
-            <mat-icon>help_outline</mat-icon>
-          </button>
-
+          <span *ngSwitchDefault>--</span>
         </ng-container>
       </td>
     </ng-container>

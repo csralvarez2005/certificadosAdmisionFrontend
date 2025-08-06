@@ -1,33 +1,45 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { EstudianteService } from '../../servicios/estudiante.service';
 import { Estudiante } from '../../modelos/estudiante.model';
 import { EstudiantePageResponse } from '../../modelos/estudiante-page-response.model';
+
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+
+import { ConstanciaEstudioComponent } from '../constancia-estudio/constancia-estudio.component';
+import { CertificadoNotasComponent } from '../certificado-notas/certificado-notas.component';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogEditarCuerpoNotasComponent } from '../../componentes/certificado-notas/certificado-notas-dialog.component';
 
 @Component({
   selector: 'app-estudiante-list',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatCardModule,
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    MatDialogModule,
-    FormsModule
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    ConstanciaEstudioComponent,
+    CertificadoNotasComponent
   ],
   templateUrl: './estudiante-list.component.html',
-  styleUrls: ['./estudiante-list.component.css'],
+  styleUrls: ['./estudiante-list.component.css']
 })
 export class EstudianteListComponent implements OnInit {
   estudiantes: Estudiante[] = [];
@@ -41,12 +53,16 @@ export class EstudianteListComponent implements OnInit {
     'codigo',
     'programa',
     'concepto',
+    'referencia',
     'fechaLiquidacion',
     'estado',
-    'accion',
+    'accion'
   ];
 
-  constructor(private estudianteService: EstudianteService, private dialog: MatDialog) {}
+  constructor(
+    private estudianteService: EstudianteService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.cargarEstudiantes();
@@ -59,11 +75,9 @@ export class EstudianteListComponent implements OnInit {
         this.estudiantes = response.estudiantes
           .map(est => ({
             ...est,
-            fechaLiquidacion: this.parseFecha(est.fechaLiquidacion as unknown as string)
+            fechaLiquidacion: new Date(est.fechaLiquidacion)
           }))
-          .sort((a, b) =>
-            a.fechaLiquidacion.getTime() - b.fechaLiquidacion.getTime()
-          );
+          .sort((a, b) => a.fechaLiquidacion.getTime() - b.fechaLiquidacion.getTime());
 
         this.totalItems = response.totalElementos;
         this.totalPaginas = response.totalPaginas;
@@ -76,34 +90,15 @@ export class EstudianteListComponent implements OnInit {
     this.cargarEstudiantes();
   }
 
-  accionEstudiante(est: Estudiante): void {
-    switch (est.conceptoFacturacion) {
-      case 'CONSTANCIA DE ESTUDIO':
-        const cuerpoPorDefecto = this.generarTextoCuerpo(est);
-
-        const dialogRef = this.dialog.open(ModalEditarCuerpoComponent, {
-          width: '600px',
-          data: { cuerpo: cuerpoPorDefecto }
-        });
-
-        dialogRef.afterClosed().subscribe((textoEditado: string) => {
-          if (textoEditado) {
-            this.estudianteService.generarConstanciaPersonalizada(est.id, textoEditado)
-              .subscribe((pdf: Blob) => {
-                this.descargarArchivo(pdf, `constancia_estudio_${est.codigo}.pdf`);
-              });
-          }
-        });
-        break;
-
-      case 'CERTIFICADO DE NOTA':
-        alert('Funcionalidad aún no implementada.');
-        break;
-
-      case 'CERTIFICADO BUENA CONDUCTA':
-        alert('Funcionalidad aún no implementada.');
-        break;
-    }
+  descargarCertificado(certificado: { nivel: number; cuerpo: string }, est: Estudiante): void {
+    this.estudianteService.generarConstanciaNotasPorCodigo(est.codigo, certificado.nivel)
+      .subscribe((resp) => {
+        const idGenerado = resp.id;
+        this.estudianteService.descargarReportePdf(idGenerado)
+          .subscribe((pdf: Blob) => {
+            this.descargarArchivo(pdf, `certificado_notas_${est.codigo}_nivel${certificado.nivel}.pdf`);
+          });
+      });
   }
 
   descargarArchivo(blob: Blob, nombreArchivo: string): void {
@@ -128,51 +123,44 @@ export class EstudianteListComponent implements OnInit {
     }
   }
 
-  parseFecha(fecha: string): Date {
-    const partes = fecha.split('/');
-    const dia = parseInt(partes[0], 10);
-    const mes = parseInt(partes[1], 10) - 1;
-    const anio = parseInt(partes[2], 10);
-    return new Date(anio, mes, dia);
+  isValidDate(value: any): boolean {
+    const date = new Date(value);
+    return value && !isNaN(date.getTime());
   }
 
-  generarTextoCuerpo(est: Estudiante): string {
-    return `Que: ${est.estudiante.toUpperCase()}, identificado(a) con ${est.tipoDocumento.toUpperCase()} ${est.codigo.toUpperCase()}, se encuentra matriculado(a) en esta Fundación para el segundo semestre del programa Técnico laboral en ${est.programaTecnico}. Con Jornada ${est.horario.toLowerCase()}. Periodo B 2025.
+  abrirCertificadoNotas(estudiante: Estudiante): void {
+    const cuerpo = `Texto generado a partir del estudiante ${estudiante.estudiante}...`;
 
-Inicio de semestre: 01 de julio 2025               Finalización: 4 de diciembre 2025
+    const ref = this.dialog.open(DialogEditarCuerpoNotasComponent, {
+      width: '600px',
+      data: { cuerpo }
+    });
 
-Duración de programa: 2 años
-Intensidad horaria del programa: 1.248 horas
-Intensidad horaria semanal: 24 horas`;
-  }
-}
+    ref.afterClosed().subscribe((textoEditado: string) => {
+      if (textoEditado?.trim()) {
+        if (estudiante.nivel == null) {
+          console.error('❌ Nivel inválido:', estudiante.nivel);
+          alert('El estudiante no tiene nivel definido. No se puede generar el certificado.');
+          return;
+        }
 
-@Component({
-  selector: 'modal-editar-cuerpo',
-  template: `
-    <h2 mat-dialog-title>Editar cuerpo del certificado</h2>
-    <mat-dialog-content>
-      <textarea [(ngModel)]="data.cuerpo" rows="10" cols="60" style="width:100%"></textarea>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Cancelar</button>
-      <button mat-raised-button color="primary" (click)="onConfirm()">Confirmar</button>
-    </mat-dialog-actions>
-  `,
-  standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule]
-})
-export class ModalEditarCuerpoComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ModalEditarCuerpoComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { cuerpo: string }
-  ) {}
-
-  onConfirm(): void {
-    this.dialogRef.close(this.data.cuerpo);
-  }
-
-  onCancel(): void {
-    this.dialogRef.close();
+        this.estudianteService
+          .generarConstanciaNotasPersonalizada(estudiante.id, estudiante.nivel, textoEditado)
+          .subscribe({
+            next: (pdf: Blob) => {
+              const blob = new Blob([pdf], { type: 'application/pdf' });
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `certificado_notas_${estudiante.codigo}_nivel${estudiante.nivel}.pdf`;
+              link.click();
+              window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+              console.error('❌ Error al generar certificado:', err);
+            }
+          });
+      }
+    });
   }
 }

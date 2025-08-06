@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { EstudiantePageResponse } from '../modelos/estudiante-page-response.model';
+import { Estudiante } from '../modelos/estudiante.model'; // IMPORTANTE
+import { FilaNota } from '../modelos/fila-nota.model';
 
 @Injectable({
   providedIn: 'root',
@@ -17,12 +19,11 @@ export class EstudianteService {
     return this.http.get<EstudiantePageResponse>(url);
   }
 
-  // Constancia estándar
   generarConstancia(estudianteId: number): Observable<Blob> {
     return this.http
       .post<{ id: number }>(`${this.baseUrl}/reporte/constancia-estudio/${estudianteId}`, {})
       .pipe(
-        switchMap((res) =>
+        switchMap((res: { id: number }) =>
           this.http.get(`${this.baseUrl}/reporte/${res.id}`, {
             responseType: 'blob',
           })
@@ -30,9 +31,53 @@ export class EstudianteService {
       );
   }
 
-  // Constancia personalizada (usa cuerpo del texto)
   generarConstanciaPersonalizada(estudianteId: number, cuerpo: string): Observable<Blob> {
     const url = `${this.baseUrl}/reporte/constancia-estudio/personalizada?id=${estudianteId}`;
     return this.http.post(url, { cuerpo }, { responseType: 'blob' });
   }
+
+  generarConstanciaNotasPorCodigo(codigo: string, nivel: number): Observable<{ id: number }> {
+    const url = `${this.baseUrl}/reporte/constancia-notas/${codigo}?nivel=${nivel}`;
+    return this.http.post<{ id: number }>(url, {});
+  }
+
+  descargarReportePdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/reporte/${id}`, {
+      responseType: 'blob',
+    });
+  }
+
+  generarConstanciaNotasYDescargar(codigo: string, nivel: number): Observable<Blob> {
+    const urlGenerar = `${this.baseUrl}/reporte/constancia-notas/${codigo}?nivel=${nivel}`;
+
+    return this.http.post<{ id: number }>(urlGenerar, {}).pipe(
+      switchMap((res: { id: number }) =>
+        this.http.get(`${this.baseUrl}/reporte/${res.id}`, {
+          responseType: 'blob',
+        })
+      )
+    );
+  }
+
+ generarConstanciaNotasPersonalizada(id: number, nivel: number, cuerpo: string): Observable<Blob> {
+  const url = `/api/reporte/constancia-notas/personalizada`;  // tu endpoint
+  const params = new HttpParams().set('id', id).set('nivel', nivel);
+  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+  return this.http.post(url, { cuerpo }, { params, headers, responseType: 'blob' });
 }
+
+   generarTablaNotas(estudianteId: number, nivel: number): Observable<FilaNota[]> {
+  return this.http.get<FilaNota[]>(`/api/notas/generarTablaNotasJson`, {
+    params: {
+      estudianteId: estudianteId.toString(),
+      nivelDeseado: nivel.toString()
+    }
+  });
+}
+
+
+}
+
+
+
