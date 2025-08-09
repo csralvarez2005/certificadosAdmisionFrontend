@@ -59,8 +59,8 @@ export class EstudianteService {
     );
   }
 
- generarConstanciaNotasPersonalizada(id: number, nivel: number, cuerpo: string): Observable<Blob> {
-  const url = `/api/reporte/constancia-notas/personalizada`;  // tu endpoint
+generarConstanciaNotasPersonalizada(id: number, nivel: number, cuerpo: string): Observable<Blob> {
+  const url = `http://localhost:8080/api/estudiantes/reporte/constancia-notas/personalizada`;
   const params = new HttpParams().set('id', id).set('nivel', nivel);
   const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
@@ -76,6 +76,13 @@ export class EstudianteService {
   });
 }
 
+obtenerNotasPorCodigo(codigo: string): Observable<Estudiante[]> {
+  const url = `${this.baseUrl}/notas/${codigo}`;
+  return this.http.get<Estudiante[]>(url);
+}
+obtenerTablaNotasPorCodigo(codigo: string, nivel: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.baseUrl}/notas/tabla/${codigo}?nivel=${nivel}`);
+}
 
 }
 
