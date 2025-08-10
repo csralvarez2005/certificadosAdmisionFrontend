@@ -128,39 +128,54 @@ export class EstudianteListComponent implements OnInit {
     return value && !isNaN(date.getTime());
   }
 
-  abrirCertificadoNotas(estudiante: Estudiante): void {
-    const cuerpo = `Texto generado a partir del estudiante ${estudiante.estudiante}...`;
+ abrirCertificadoNotas(estudiante: Estudiante): void {
+  const cuerpo = `Texto generado a partir del estudiante ${estudiante.estudiante}...`;
+  const infoPrograma = `Duración de programa: 2 años\nIntensidad horaria del programa: 1.358 horas\nIntensidad horaria semanal: 24 horas`;
 
-    const ref = this.dialog.open(DialogEditarCuerpoNotasComponent, {
-      width: '600px',
-      data: { cuerpo }
-    });
+  const ref = this.dialog.open(DialogEditarCuerpoNotasComponent, {
+    width: '600px',
+    data: { cuerpo, infoPrograma } // ✅ Pasamos ambos valores al modal
+  });
 
-    ref.afterClosed().subscribe((textoEditado: string) => {
-      if (textoEditado?.trim()) {
-        if (estudiante.nivel == null) {
-          console.error('❌ Nivel inválido:', estudiante.nivel);
-          alert('El estudiante no tiene nivel definido. No se puede generar el certificado.');
-          return;
-        }
-
-        this.estudianteService
-          .generarConstanciaNotasPersonalizada(estudiante.id, estudiante.nivel, textoEditado)
-          .subscribe({
-            next: (pdf: Blob) => {
-              const blob = new Blob([pdf], { type: 'application/pdf' });
-              const url = window.URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = `certificado_notas_${estudiante.codigo}_nivel${estudiante.nivel}.pdf`;
-              link.click();
-              window.URL.revokeObjectURL(url);
-            },
-            error: (err) => {
-              console.error('❌ Error al generar certificado:', err);
-            }
-          });
+  ref.afterClosed().subscribe((result?: { cuerpo: string; infoPrograma: string }) => {
+    if (result?.cuerpo?.trim()) {
+      if (estudiante.nivel == null) {
+        console.error('❌ Nivel inválido:', estudiante.nivel);
+        alert('El estudiante no tiene nivel definido. No se puede generar el certificado.');
+        return;
       }
-    });
-  }
+
+      // 📌 Log para verificar qué se envía al backend
+      console.log('📤 Enviando al backend:', {
+        id: estudiante.id,
+        nivel: estudiante.nivel,
+        cuerpo: result.cuerpo,
+        infoPrograma: result.infoPrograma
+      });
+
+      this.estudianteService
+        .generarConstanciaNotasPersonalizada(
+          estudiante.id,
+          estudiante.nivel,
+          result.cuerpo,        // ✅ texto cuerpo
+          result.infoPrograma   // ✅ texto infoPrograma
+        )
+        .subscribe({
+          next: (pdf: Blob) => {
+            console.log('✅ PDF recibido correctamente');
+            const blob = new Blob([pdf], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `certificado_notas_${estudiante.codigo}_nivel${estudiante.nivel}.pdf`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+          },
+          error: (err) => {
+            console.error('❌ Error al generar certificado:', err);
+          }
+        });
+    }
+  });
+}
 }

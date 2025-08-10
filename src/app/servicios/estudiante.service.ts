@@ -59,12 +59,30 @@ export class EstudianteService {
     );
   }
 
- generarConstanciaNotasPersonalizada(id: number, nivel: number, cuerpo: string): Observable<Blob> {
-  const url = `/api/reporte/constancia-notas/personalizada`;  // tu endpoint
-  const params = new HttpParams().set('id', id).set('nivel', nivel);
-  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+generarConstanciaNotasPersonalizada(
+    id: number, 
+    nivel: number, 
+    cuerpo: string, 
+    infoPrograma: string
+): Observable<Blob> {
 
-  return this.http.post(url, { cuerpo }, { params, headers, responseType: 'blob' });
+  console.log('📌 Enviando a backend:', {
+    id,
+    nivel,
+    cuerpo,
+    infoPrograma
+  });
+
+  const params = new HttpParams()
+    .set('id', id.toString())
+    .set('nivel', nivel.toString())
+    .set('cuerpo', cuerpo || '')
+    .set('infoPrograma', infoPrograma || '');
+
+  return this.http.get(`${this.baseUrl}/constancia-notas`, {
+    params,
+    responseType: 'blob'
+  });
 }
 
    generarTablaNotas(estudianteId: number, nivel: number): Observable<FilaNota[]> {
@@ -76,8 +94,25 @@ export class EstudianteService {
   });
 }
 
-
+obtenerNotasPorCodigo(codigo: string): Observable<Estudiante[]> {
+  const url = `${this.baseUrl}/notas/${codigo}`;
+  return this.http.get<Estudiante[]>(url);
+}
+obtenerTablaNotasPorCodigo(codigo: string, nivel: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.baseUrl}/notas/tabla/${codigo}?nivel=${nivel}`);
 }
 
+generarConstanciaNotas(id: number, nivel: number): Observable<Blob> {
+  const params = new HttpParams()
+    .set('id', id.toString())
+    .set('nivel', nivel.toString());
+
+  return this.http.get(`${this.baseUrl}/constancia-notas`, {
+    params,
+    responseType: 'blob'
+  });
+}
+
+}
 
 
