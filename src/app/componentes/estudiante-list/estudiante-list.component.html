@@ -48,27 +48,34 @@
     </ng-container>
 
     <!-- Acción -->
-    <ng-container matColumnDef="accion">
-      <th mat-header-cell *matHeaderCellDef> Acción </th>
-      <td mat-cell *matCellDef="let est">
-        <ng-container [ngSwitch]="est.conceptoFacturacion">
-          <!-- Constancia de Estudio -->
-          <app-constancia-estudio
-            *ngSwitchCase="'CONSTANCIA DE ESTUDIO'"
-            [estudiante]="est">
-          </app-constancia-estudio>
+  <ng-container matColumnDef="accion">
+  <th mat-header-cell *matHeaderCellDef> Acción </th>
+  <td mat-cell *matCellDef="let est">
+    <ng-container [ngSwitch]="est.conceptoFacturacion">
+      
+      <!-- Constancia de Estudio -->
+      <app-constancia-estudio
+        *ngSwitchCase="'CONSTANCIA DE ESTUDIO'"
+        [estudiante]="est">
+      </app-constancia-estudio>
 
-          <!-- Certificado de Notas -->
-          <app-certificado-notas
-            *ngSwitchCase="'CERTIFICADO DE NOTA'"
-            [estudiante]="est">
-          </app-certificado-notas>
+      <!-- Certificado de Notas -->
+      <app-certificado-notas
+        *ngSwitchCase="'CERTIFICADO DE NOTA'"
+        [estudiante]="est">
+      </app-certificado-notas>
 
-          <!-- Otro caso -->
-          <span *ngSwitchDefault>--</span>
-        </ng-container>
-      </td>
+      <!-- Certificado de Buena Conducta -->
+      <app-certificado-buena-conducta
+        *ngSwitchCase="'CERTIFICADO BUENA CONDUCTA'"
+        [estudiante]="est">
+      </app-certificado-buena-conducta>
+
+      <!-- Otro caso -->
+      <span *ngSwitchDefault>--</span>
     </ng-container>
+  </td>
+</ng-container>
 
     <!-- Encabezados y filas -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
